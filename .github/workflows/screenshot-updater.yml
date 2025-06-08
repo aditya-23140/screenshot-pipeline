@@ -23,22 +23,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Next.js site
+      - name: Build Next.js static site
         run: npm run build
-
-      # Export static site to 'out' folder (you need to add next.config.js for basePath if repo is a subpath)
-      - name: Export static site
-        run: npm run export
 
       # Deploy to GitHub Pages from the 'out' folder
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out
+          publish_dir: .next/output/export
           publish_branch: gh-pages
           user_name: github-actions
           user_email: github-actions@github.com
+
 
       # Wait a bit for GitHub Pages to serve the new content (optional, but recommended)
       - name: Wait for GitHub Pages to be available
