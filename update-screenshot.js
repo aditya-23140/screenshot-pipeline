@@ -14,7 +14,7 @@ const path = isLinux
   });
   const pages = await browser.newPage();
   await pages.goto(
-    "https://aditya-23140.github.io/Self-Projects/screenshot-pipeline",
+    "https://aditya-23140.github.io/screenshot-pipeline",
     { waitUntil: "networkidle2" }
   );
 
