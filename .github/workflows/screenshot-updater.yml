@@ -1,4 +1,4 @@
-name: Screenshot Updater
+name: Build, Deploy and Update Screenshot
 
 on:
   push:
@@ -6,42 +6,64 @@ on:
       - master
 
 jobs:
-  update-screenshot:
+  build-deploy-screenshot:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup NodeJS
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20" # or 18/22 depending on your Next.js support
+          node-version: "20"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Next.js project
+      - name: Build Next.js site
         run: npm run build
 
-      - name: Start Next.js server
-        run: |
-          nohup npm run start &  # runs on port 3000 by default
-          sleep 10
+      # Export static site to 'out' folder (you need to add next.config.js for basePath if repo is a subpath)
+      - name: Export static site
+        run: npm run export
+
+      # Deploy to GitHub Pages from the 'out' folder
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
+          user_name: github-actions
+          user_email: github-actions@github.com
+
+      # Wait a bit for GitHub Pages to serve the new content (optional, but recommended)
+      - name: Wait for GitHub Pages to be available
+        run: sleep 20
 
       - name: Install Puppeteer
         run: npm install puppeteer
 
+      # Run the screenshot script against the deployed GitHub Pages URL
       - name: Run Puppeteer Screenshot Script
         run: node update-screenshot.js
+        env:
+          URL_TO_CAPTURE: https://aditya-23140.github.io/screenshot-pipeline
 
-      - name: Commit screenshot.png
+      # Commit and push updated screenshot.png back to the master branch
+      - name: Commit and Push screenshot.png
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git pull
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git checkout master
+          git pull origin master
           git add screenshot.png
-          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update screenshot from workflow"
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m "Update screenshot from workflow"
+            git push origin master
+          else
+            echo "No changes to commit"
+          fi
