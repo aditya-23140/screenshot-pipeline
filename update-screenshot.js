@@ -1,5 +1,9 @@
 import puppeteer from "puppeteer-core";
-const path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+const os = require("os");
+const isLinux = os.platform() === "linux";
+const path = isLinux
+  ? "/usr/bin/google-chrome" // GitHub Actions (Linux)
+  : "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"; //
 
 (async () => {
   const browser = await puppeteer.launch({
