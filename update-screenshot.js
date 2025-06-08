@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer-core";
-const os = require("os");
+import os from "os";
+
 const isLinux = os.platform() === "linux";
 const path = isLinux
   ? "/usr/bin/google-chrome" // GitHub Actions (Linux)
